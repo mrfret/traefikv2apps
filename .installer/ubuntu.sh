@@ -151,7 +151,6 @@ EOF
   clear
 fi
 backupcomposer
-clear && interface
 }
 vnstatcheck() {
   if [[ ! -x $(command -v vnstat) ]];then $(command -v apt) install vnstat -yqq;fi
