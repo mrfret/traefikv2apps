@@ -1,5 +1,5 @@
 #########################################################################
-# Title:         Cloudbox: rtorrent Role                                #
+# Title:         Cloudbox: rutorrent Role                                #
 # Author(s):     l3uddz                                                 #
 # URL:           https://github.com/cloudbox/cloudbox                   #
 # --                                                                    #
@@ -9,7 +9,7 @@
 #########################################################################
 #!/bin/ansible-playbook
 #
-# Title:      rtorrent Subtask
+# Title:      rutorrent Subtask
 # Author(s):  MrDoob
 # URL:        https://sudobox.io
 # GNU:        General Public License v3.0
@@ -21,7 +21,7 @@
 
   - name: 'Set Known Facts'
     set_fact:
-      app: 'rtorrent'
+      app: 'rutorrent'
 
   - name: 'Stop {{app}}'
     shell: 'docker stop {{app}}'
@@ -208,7 +208,7 @@
       state: present
 
 
-# Maximum number of open files rtorrent can keep open.
+# Maximum number of open files rutorrent can keep open.
   - name: Settings Set 'max_open_files' to 1024
     lineinfile:
       path: "/opt/appdata/{{app}}/rtorrent/rtorrent.rc"

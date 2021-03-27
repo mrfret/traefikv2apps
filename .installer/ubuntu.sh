@@ -3,7 +3,7 @@
 # Copyright (c) 2020, MrDoob
 # All rights reserved.
 appstartup() {
-if [[ $EUID -ne 0 ]]; then
+if [[ $EUID -ne 0 ]];then
 tee <<-EOF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⛔  You Must Execute as a SUDO USER (with sudo) or as ROOT!
@@ -12,8 +12,8 @@ EOF
 exit 0
 fi
 while true; do
-  if [[ ! -x $(command -v docker) ]]; then exit;fi
-  if [[ ! -x $(command -v docker-compose) ]]; then exit;fi
+  if [[ ! -x $(command -v docker) ]];then exit;fi
+  if [[ ! -x $(command -v docker-compose) ]];then exit;fi
   headinterface
 done
 }
@@ -21,24 +21,25 @@ headinterface() {
 tee <<-EOF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     🚀 App Head Section Menu
+    🚀 App Head Section Menu
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-[ 1 ] Install Apps
-[ 2 ] Remove  Apps
+    [ 1 ] Install Apps
+    [ 2 ] Remove  Apps
 
-[ 3 ] Create Backup Docker-compose File
+    [ 3 ] Create Backup Docker-compose File
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[ Z ] - Exit
+    [ EXIT or Z ] - Exit || [ help or HELP ] - Help
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 EOF
-  read -erp "↘️  Type Number and Press [ENTER]:" headsection </dev/tty
+  read -erp "↘️  Type Number and Press [ENTER]: " headsection </dev/tty
   case $headsection in
-    1) clean && interface ;;
-    2) clean && removeapp ;;
-    3) clean && backupcomposercommamd ;;
-    Z|z) exit ;;
+    1) clear && interface ;;
+    2) clear && removeapp ;;
+    3) clear && backupcomposer && clear && headinterface ;;
+    help|HELP|Help) clear && sectionhelplayout ;;
+    Z|z|exit|EXIT|Exit|close) exit ;;
     *) appstartup ;;
   esac
 }
@@ -47,20 +48,22 @@ buildshow=$(ls -1p /opt/apps/ | grep '/$' | $(command -v sed) 's/\/$//')
 tee <<-EOF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-      🚀 App Section Menu
+    🚀 App Section Menu
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 $buildshow
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[ EXIT or Z ] - Exit
+    [ EXIT or Z ] - Exit || [ help or HELP ] - Help
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 EOF
-  read -erp "↘️  Type Section Name and Press [ENTER]:" section </dev/tty
-  if [[ $section == "exit" || $section == "Exit" || $section == "EXIT" || $section  == "z" || $section == "Z" ]];then headinterface;fi
-      checksection=$(ls -1p /opt/apps/ | grep '/$' | $(command -v sed) 's/\/$//'| grep -x $section)
-  if [[ $section == "" ]] || [[ $checksection == "" ]];then clear && interface;fi
+  read -erp "↘️  Type Section Name and Press [ENTER]: " section </dev/tty
+  if [[ $section == "exit" || $section == "Exit" || $section == "EXIT" || $section  == "z" || $section == "Z" ]];then clear && headinterface;fi
+  if [[ $section == "" ]];then clear && interface;fi
+  if [[ $section == "help" || $section == "HELP"  ]];then clear && sectionhelplayout;fi
+      checksection=$(ls -1p /opt/apps/ | grep '/$' | $(command -v sed) 's/\/$//' | grep -x $section)
+  if [[ $checksection == "" ]];then clear && interface;fi
   if [[ $checksection == $section ]];then clear && install;fi
 }
 install() {
@@ -69,35 +72,125 @@ buildshow=$(ls -1p /opt/apps/${section}/compose/ | sed -e 's/.yml//g' )
 tee <<-EOF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     🚀 App Installer of ${section}
+    🚀 App Installer of ${section}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 $buildshow
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[ EXIT or Z ] - Exit
+    [ EXIT or Z ] - Exit || [ help or HELP ] - Help
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 EOF
 
-  read -erp "↪️ Type App-Name to install and Press [ENTER]:" typed </dev/tty
-  if [[ $typed == "exit" || $typed == "Exit" || $typed == "EXIT" || $typed  == "z" || $typed == "Z" ]];then interface;fi
+  read -erp "↪️ Type App-Name to install and Press [ENTER]: " typed </dev/tty
+  if [[ $typed == "exit" || $typed == "Exit" || $typed == "EXIT" || $typed  == "z" || $typed == "Z" ]];then clear && interface;fi
+  if [[ $typed == "" ]];then clear && install;fi
+  if [[ $typed == "help" || $typed == "HELP"  ]];then clear && helplayout;fi
      buildapp=$(ls -1p /opt/apps/${section}/compose/ | $(command -v sed) -e 's/.yml//g' | grep -x $typed)
-  if [[ $typed == "" ]] || [[ $buildapp == "" ]];then install;fi
-  if [[ $buildapp == $typed ]];then runinstall;fi
+  if [[ $buildapp == "" ]];then clear && install;fi
+  if [[ $buildapp == $typed ]];then clear && runinstall;fi
+}
+sectionhelplayout() {
+helpshowsection=$(ls -1p /opt/apps/.help/ | sed -e 's/.me//g' )
+tee <<-EOF
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    🚀 Help
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+$helpshowsection
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    [ EXIT or Z ] - Exit
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+EOF
+  read -erp "↪️ Type App-Name to show short informations and Press [ENTER]: " typed </dev/tty
+  if [[ $typed == "exit" || $typed == "Exit" || $typed == "EXIT" || $typed  == "z" || $typed == "Z" ]];then clear && interface;fi
+  if [[ $typed == "" ]];then clear && helplayout;fi
+     helpappsection=$(ls -1p /opt/apps/.help/ | $(command -v sed) -e 's/.me//g' | grep -x $typed)
+  if [[ $helpappsection == "" ]];then clear && sectionhelplayout;fi
+  if [[ $helpappsection == $typed ]];then clear && showhelpsection;fi
+}
+showhelpsection() {
+showhelptypedsection=$(cat /opt/apps/.help/${typed}.me )
+tee <<-EOF
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    🚀 Section Help of ${typed}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+$showhelptypedsection
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    [ EXIT or Z ] - Exit
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+EOF
+  read -erp "Confirm Info | PRESS [ENTER] "  typed </dev/tty
+  clear && sectionhelplayout
+}
+helplayout() {
+section=${section}
+helpshow=$(ls -1p /opt/apps/${section}/.help/ | sed -e 's/.me//g' )
+tee <<-EOF
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    🚀 App Help of ${section}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+$helpshow
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    [ EXIT or Z ] - Exit
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+EOF
+  read -erp "↪️ Type App-Name to get help and Press [ENTER]: " typed </dev/tty
+  if [[ $typed == "exit" || $typed == "Exit" || $typed == "EXIT" || $typed  == "z" || $typed == "Z" ]];then clear && interface;fi
+  if [[ $typed == "" ]];then clear && helplayout;fi
+     helpapp=$(ls -1p /opt/apps/${section}/.help/ | $(command -v sed) -e 's/.me//g' | grep -x $typed)
+  if [[ $helpapp == "" ]];then clear && helplayout;fi
+  if [[ $helpapp == $typed ]];then clear && showhelp;fi
+}
+showhelp() {
+section=${section}
+showhelptyped=$(cat /opt/apps/${section}/.help/${typed}.me )
+tee <<-EOF
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    🚀 App Help of ${typed}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+$showhelptyped
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    [ EXIT or Z ] - Exit
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+EOF
+  read -erp "Confirm Info | PRESS [ENTER] " typed </dev/tty
+  clear && helplayout
+
 }
 runinstall() {
   compose="compose/docker-compose.yml"
   composeoverwrite="compose/docker-compose.override.yml"
   appfolder="/opt/apps"
   basefolder="/opt/appdata"
+    tee <<-EOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    Please Wait ! 
+    We install now ${typed}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EOF
   if [[ ! -d $basefolder/compose/ ]];then $(command -v mkdir) -p $basefolder/compose/;fi
-  if [[ -f $basefolder/$composeoverwrite ]];then $(command -v rm) -rf $basefolder/$composeoverwrite;fi
   if [[ ! -x $(command -v rsync) ]];then $(command -v apt) install rsync -yqq >/dev/null 2>&1;fi
-  if [[ -f $basefolder/$compose ]];then $(command -v rsync) $appfolder/${section}/compose/${typed}.yml $basefolder/$compose -aq --info=progress2 -hv;fi
-  if [[ ! -f $basefolder/$compose ]];then $(command -v rsync) $appfolder/${section}/compose/${typed}.yml $basefolder/$compose -aq --info=progress2 -hv;fi
+  if [ -f $basefolder/$compose ] || [ ! -f $basefolder/$compose ];then $(command -v rsync) $appfolder/${section}/compose/${typed}.yml $basefolder/$compose -aq --info=progress2 -hv;fi
+  #if [[ ! -f $basefolder/$compose ]];then $(command -v rsync) $appfolder/${section}/compose/${typed}.yml $basefolder/$compose -aq --info=progress2 -hv;fi
   if [[ ! -x $(command -v lshw) ]];then $(command -v apt) install lshw -yqq >/dev/null 2>&1;fi
-  if [[ ${section} == "mediaserver" ]];then
+  if [[ ${section} == "mediaserver" || ${section} == "encoder" ]];then
      gpu="i915 nvidia"
      for i in ${gpu}; do
         TDV=$($(command -v lshw) -C video | $(command -v grep) -qE $i && echo true || echo false)
@@ -109,6 +202,7 @@ runinstall() {
         $(command -v sed) -i "s/<APP>/${typed}/g" $basefolder/$composeoverwrite
      fi
   fi
+  if [[ -f $appfolder/${section}/compose/.overwrite/${typed}.overwrite.yml ]];then $(command -v rsync) $appfolder/${section}/compose/.overwrite/${typed}.overwrite.yml $basefolder/$composeoverwrite -aq --info=progress2 -hv;fi
   if [[ ! -d $basefolder/${typed} ]];then
      folder=$basefolder/${typed}
      for i in ${folder}; do
@@ -118,10 +212,10 @@ runinstall() {
      done
   fi
   container=$($(command -v docker) ps -aq --format '{{.Names}}' | grep -x ${typed})
-  if [[ $container != "" ]]; then
+  if [[ $container == ${typed} ]];then
      docker="stop rm"
      for i in ${docker}; do
-         $(command -v docker) $i $container 1>/dev/null 2>&1
+         $(command -v docker) $i ${typed} 1>/dev/null 2>&1
      done
      $(command -v docker) image prune -af 1>/dev/null 2>&1
   else
@@ -132,64 +226,88 @@ runinstall() {
   if [[ ${section} == "mediaserver" && ${typed} == "plex" ]];then plexclaim;fi
   if [[ -f $basefolder/$compose ]];then
      $(command -v cd) $basefolder/compose/
-     $(command -v docker-compose) pull ${typed} 1>/dev/null 2>&1
-     $(command -v docker-compose) up -d --force-recreate 1>/dev/null 2>&1
+     $(command -v docker-compose) config 1>/dev/null 2>&1
+     errorcode=$?
+     if [[ $errorcode -ne 0 ]];then
+  tee <<-EOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    compose check of ${typed} was failed
+    Return code was ${errorcode}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EOF
+  read -erp "Confirm Info | PRESS [ENTER]" typed </dev/tty
+  clear && interface
+     else
+         $(command -v docker-compose) pull ${typed} 1>/dev/null 2>&1
+         $(command -v docker-compose) up -d --force-recreate 1>/dev/null 2>&1
+     fi
   fi
   if [[ ${section} == "mediaserver" ]];then subtasks;fi
   if [[ ${section} == "downloadclients" ]];then subtasks;fi
-     runningcheck=$($(command -v docker) ps -aq --format '{{.Names}} {{.State}}' | grep -x '${typed} running' 1>/dev/null 2>&1 && echo true || echo false)
-  if [[ $runningcheck == "true" ]];then
-     source $basefolder/compose/.env
+  if [[ ${typed} == "overseerr" || ${typed} == "petio" || ${typed} == "heimdall" ]];then subtasks;fi
+     $($(command -v docker) ps -aq --format '{{.Names}}{{.State}}' | grep -qE ${typed}running 1>/dev/null 2>&1)
+     errorcode=$?
+  if [[ $errorcode -eq 0 ]];then
+  source $basefolder/compose/.env
   tee <<-EOF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ${typed} successfull deployed and working
+    ${typed} successfull deployed and is working
 
-  https://${typed}.${DOMAIN}
+    https://${typed}.${DOMAIN}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
   read -erp "Confirm Info | PRESS [ENTER]" typed </dev/tty
   clear
 fi
-backupcomposer
+if [[ -f $basefolder/$compose ]];then $(command -v rm) -rf $basefolder/$compose;fi
+if [[ -f $basefolder/$composeoverwrite ]];then $(command -v rm) -rf $basefolder/$composeoverwrite;fi
+backupcomposer && clear && install
 }
 vnstatcheck() {
   if [[ ! -x $(command -v vnstat) ]];then $(command -v apt) install vnstat -yqq;fi
 }
 autoscancheck() {
+$(docker ps -aq --format={{.Names}} | grep -E 'arr' 1>/dev/null 2>&1)
+errorcode=$?
+if [[ $errorcode -eq 0 ]];then
   if [[ ! -f $basefolder/${typed}/config.yml ]];then
-     $(command -v rsync) $appfolder/${section}/compose/${typed}.config.yml $basefolder/${typed} -aq --info=progress2 -hv
+     $(command -v rsync) $appfolder/.subactions/compose/${typed}.config.yml $basefolder/${typed}/config.yml -aq --info=progress2 -hv
      $(command -v bash) $appfolder/.subactions/compose/${typed}.sh
   else
 tee <<-EOF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🚀 ${typed} config found
+    🚀 ${typed} config found
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-      We found an existing config.yml for ${typed}
-                no changes
+    We found an existing config.yml for ${typed}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
   read -erp "Confirm Info | PRESS [ENTER]" typed </dev/tty
   clear
   fi
+tee <<-EOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ❌ ERROR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    Sorry we cannot find any runnings Arrs
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EOF
+fi
 }
 plexclaim() {
 tee <<-EOF
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🚀 PLEX CLAIM
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    🚀 PLEX CLAIM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Please Claim the Plex Server
+    Please Claim the Plex Server
 
-PLEX CLAIM
+    https://www.plex.tv/claim/
 
-https://www.plex.tv/claim/
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
-  read -erp "Enter your PLEX CLAIM CODE:" PLEXCLAIM
-  if [[ $PLEXCLAIM != "" ]]; then
-     if [[ $(uname) == "Darwin" ]]; then
+  read -erp "Enter your PLEX CLAIM CODE : " PLEXCLAIM
+  if [[ $PLEXCLAIM != "" ]];then
+     if [[ $(uname) == "Darwin" ]];then
         $(command -v sed) -i '' "s/PLEX_CLAIM_ID/$PLEXCLAIM/g" $basefolder/$compose
      else
         $(command -v sed) -i "s/PLEX_CLAIM_ID/$PLEXCLAIM/g" $basefolder/$compose
@@ -200,73 +318,87 @@ EOF
   fi
 }
 subtasks() {
+basefolder="/opt/appdata"
 source $basefolder/compose/.env
 authcheck=$($(command -v docker) ps -aq --format '{{.Names}}' | grep -x 'authelia' 1>/dev/null 2>&1 && echo true || echo false)
 conf=$basefolder/authelia/configuration.yml
 confnew=$basefolder/authelia/configuration.yml.new
 confbackup=$basefolder/authelia/configuration.yml.backup
+authadd=$(cat $conf | grep -qE '${typed}' && echo true || false)
 
   if [[ ! -x $(command -v ansible) || ! -x $(command -v ansible-playbook) ]];then $(command -v apt) ansible --reinstall -yqq;fi
   if [[ -f $appfolder/.subactions/compose/${typed}.yml ]];then $(command -v ansible-playbook) $appfolder/.subactions/compose/${typed}.yml;fi
-  if [[ ${section} == "mediaserver" || ${section} == "downloadclients" ]];then $(command -v docker) restart ${typed} 1>/dev/null 2>&1;fi
-  if [[ ${section} == "mediaserver" ]];then
+     $(grep "model name" /proc/cpuinfo | cut -d ' ' -f3- | head -n1 |grep -qE 'i7|i9' 1>/dev/null 2>&1)
+     errorcode=$?
+     if [[ $errorcode -eq 0 ]];then
+        if [[ -f $appfolder/.subactions/compose/${typed}.sh ]];then $(command -v bash) $appfolder/.subactions/compose/${typed}.sh;fi
+     fi
+  if [[ $authadd == "false" || $authadd == "" ]];then
+     if [[ ${section} == "mediaserver" ]];then
      { head -n 38 $conf;
      echo "\
     - domain: ${typed}.${DOMAIN}
       policy: bypass"; tail -n +40 $conf; } > $confnew
-     if [[ -f $conf ]];then $(command -v rsync) $conf $confbackup -aq --info=progress2 -hv;fi
-     if [[ -f $conf ]];then $(command -v rsync) $confnew $conf -aq --info=progress2 -hv;fi
-     if [[ $authcheck == "true" ]];then $(command -v docker) restart authelia;fi
-     if [[ -f $conf ]];then $(command -v rm) -rf $confnew;fi
+        if [[ -f $conf ]];then $(command -v rsync) $conf $confbackup -aq --info=progress2 -hv;fi
+        if [[ -f $conf ]];then $(command -v rsync) $confnew $conf -aq --info=progress2 -hv;fi
+        if [[ $authcheck == "true" ]];then $(command -v docker) restart authelia;fi
+        if [[ -f $conf ]];then $(command -v rm) -rf $confnew;fi
+     fi
   fi
+  if [[ ${section} == "mediaserver" || ${section} == "downloadclients" ]];then $(command -v docker) restart ${typed} 1>/dev/null 2>&1;fi
 }
 
 backupcomposer() {
   if [[ ! -d $basefolder/composebackup ]];then $(command -v mkdir) -p $basefolder/composebackup/;fi
+    tee <<-EOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    Backup Composer creating started
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EOF
   if [[ -d $basefolder/composebackup ]];then
      docker=$($(command -v docker) ps -aq --format={{.Names}})
      $(command -v docker) pull red5d/docker-autocompose 1>/dev/null 2>&1
      $(command -v docker) run --rm -v /var/run/docker.sock:/var/run/docker.sock red5d/docker-autocompose $docker > $basefolder/composebackup/docker-compose.yml
      $(command -v docker) image prune -af 1>/dev/null 2>&1
   fi
+    tee <<-EOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    Backup Composer creating finished
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EOF
 }
-backupcomposercommamd() {
-  if [[ ! -d $basefolder/composebackup ]];then $(command -v mkdir) -p $basefolder/composebackup/;fi
-  if [[ -d $basefolder/composebackup ]];then
-     docker=$($(command -v docker) ps -aq --format={{.Names}})
-     $(command -v docker) pull red5d/docker-autocompose 1>/dev/null 2>&1
-     $(command -v docker) run --rm -v /var/run/docker.sock:/var/run/docker.sock red5d/docker-autocompose $docker > $basefolder/composebackup/docker-compose.yml
-     $(command -v docker) image prune -af 1>/dev/null 2>&1
-  fi
-  headinterface
-}
-
 removeapp() {
-list=$($(command -v docker) ps -aq --format '{{.Names}}' | grep -vE 'auth|trae')
+list=$($(command -v docker) ps -aq --format '{{.Names}}' | grep -vE 'auth|trae|cf-companion')
 tee <<-EOF
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     🚀 App Rwmove Menu
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    🚀 App Remove Menu
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 $list
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[ EXIT or Z ] - Exit
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    [ EXIT or Z ] - Exit
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 EOF
-  read -erp "↪️ Type App-Name to remove and Press [ENTER]:" typed </dev/tty
+  read -erp "↪️ Type App-Name to remove and Press [ENTER]: " typed </dev/tty
   if [[ $typed == "exit" || $typed == "Exit" || $typed == "EXIT" || $typed  == "z" || $typed == "Z" ]];then interface;fi
-  if [[ $typed == "" ]];then removeapp;fi
+  if [[ $typed == "" ]];then clear && removeapp;fi
      checktyped=$($(command -v docker) ps -aq --format={{.Names}} | grep -x $typed)
-  if [[ $checktyped == $typed ]];then deleteapp;fi
+  if [[ $checktyped == $typed ]];then clear && deleteapp;fi
 }
 deleteapp() {
   basefolder="/opt/appdata"
+  source $basefolder/compose/.env
   conf=$basefolder/authelia/configuration.yml
   checktyped=$($(command -v docker) ps -aq --format={{.Names}} | grep -x $typed)
+  auth=$(cat -An $conf | grep -x ${typed}.${DOMAIN} | awk '{print $1}')
   if [[ $checktyped == $typed ]];then
+    tee <<-EOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ${typed} App Remove started    
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EOF
      app=${typed}
      for i in ${app}; do
          $(command -v docker) stop $i 1>/dev/null 2>&1
@@ -275,18 +407,30 @@ deleteapp() {
      done
      if [[ -d $basefolder/${typed} ]];then 
         folder=$basefolder/${typed}
+    tee <<-EOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ${typed} App Folder Remove started
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EOF
         for i in ${folder}; do
             $(command -v rm) -rf $i 1>/dev/null 2>&1
         done
      fi
-     if [[ ! -x $(command -v bc) ]];then $(command -v apt) install bc -yqq 1>/dev/null 2>&1;fi
-        authrmapp=$(cat -An $conf | grep -E ${typed} | awk '{print $1}')
-        authrmapp2=$(echo "$(${authrmapp} + 1)" | bc)
-        authcheck=$($(command -v docker) ps -aq --format '{{.Names}}' | grep -x authelia 1>/dev/null 2>&1 && echo true || echo false)
+     if [[ $auth == ${typed} ]];then
+        if [[ ! -x $(command -v bc) ]];then $(command -v apt) install bc -yqq 1>/dev/null 2>&1;fi
+           authrmapp=$(cat -An $conf | grep -x ${typed}.${DOMAIN})
+           authrmapp2=$(echo "$(${authrmapp} + 1)" | bc)
         if [[ $authrmapp != "" ]];then sed -i '${authrmapp};${authrmapp2}d' $conf;fi
-        if [[ $authcheck == "true" ]];then $(command -v docker) restart authelia;fi
+           $($(command -v docker) ps -aq --format '{{.Names}}' | grep -x authelia 1>/dev/null 2>&1)
+           errorcode=$?
+        if [[ $errorcode -eq 0 ]];then $(command -v docker) restart authelia;fi
      fi
-     backupcomposer && removeapp
+    tee <<-EOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ${typed} App Remove finished
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EOF
+    sleep 2 && backupcomposer && removeapp
   else
      removeapp
   fi

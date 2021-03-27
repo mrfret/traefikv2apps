@@ -4,7 +4,7 @@
 # All rights reserved.
 basefolder="/opt/appdata"
 typed=autoscan
-
+composeoverwrite="compose/docker-compose.override.yml"
 anchor() {
 if [[ ! -x $(command -v rclone) ]];then curl https://rclone.org/install.sh | sudo bash >/dev/null 2>&1;fi
 echo "\
@@ -92,6 +92,8 @@ echo "\
   $i:
     - url: http://$i:32400
       token: $token" >> $basefolder/${typed}/config.yml
+echo "\
+      - '/opt/appdata/$i:/data/$i:ro'" >> $basefolder/$composeoverwrite
    done
 fi
 
@@ -104,6 +106,8 @@ echo "\
   $i:
     - url: http://$i:8096
       token: $token" >> $basefolder/${typed}/config.yml
+echo "\
+      - '/opt/appdata/$i:/data/$i:ro'" >> $basefolder/$composeoverwrite
    done
 fi
 jelly=$(docker ps -aq --format={{.Names}} | grep -E 'jelly' 1>/dev/null 2>&1 && echo true || echo false)
@@ -115,6 +119,8 @@ echo "\
   $i:
     - url: http://$i:8096
       token: $token" >> $basefolder/${typed}/config.yml
+echo "\
+      - '/opt/appdata/$i:/data/$i:ro'" >> $basefolder/$composeoverwrite
    done
 fi
 }
@@ -126,7 +132,7 @@ tee <<-EOF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 EOF
-   read -ep "What root domain would you like to protect?: " USERAUTOSCAN
+   read -ep "Enter a username for autoscan?: " USERAUTOSCAN
 if [[ $USERAUTOSCAN != "" ]]; then
    if [[ $(uname) == "Darwin" ]]; then
       sed -i '' "s/<USERNAME>/$USERAUTOSCAN/g" $basefolder/${typed}/config.yml
@@ -160,20 +166,29 @@ else
 fi
 }
 runautoscan() {
-arrstest=$(docker ps -aq --format={{.Names}} | grep -E 'arr' 1>/dev/null 2>&1 && echo true || echo false)
-if [[ $arrtest == "true" ]];then
+$(docker ps -aq --format={{.Names}} | grep -E 'arr' 1>/dev/null 2>&1)
+errorcode=$?
+if [[ $errorcode -eq 0 ]]; then
    anchor && arrs && targets && addauthuser && addauthuser
 else
+     app=${typed}
+     for i in ${app}; do
+         $(command -v docker) stop $i 1>/dev/null 2>&1
+         $(command -v docker) rm $i 1>/dev/null 2>&1
+         $(command -v docker) image prune -af 1>/dev/null 2>&1
+     done
+     if [[ -d $basefolder/${typed} ]];then 
+        folder=$basefolder/${typed}
+        for i in ${folder}; do
+            $(command -v rm) -rf $i 1>/dev/null 2>&1
+        done
+     fi
 tee <<-EOF
-
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     ❌ ERROR
+    ❌ ERROR
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Sorry we cannot find any runnings Arrs
-
+    Sorry we cannot find any runnings Arrs
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 EOF
 fi
 }
